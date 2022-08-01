@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Movement))]
 public class PlayerAnimation : MonoBehaviour
 {
     public Animator animator;
@@ -22,9 +21,9 @@ public class PlayerAnimation : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        animator.SetBool(jumping_param , playerdata.jump);
-        animator.SetBool(risiing_param , playerdata.rising);
-        animator.SetBool(falling_param , playerdata.falling);
-        animator.SetFloat(speed_param , playerdata.speed);
+        animator.SetFloat(speed_param, playerdata.speed);
+        animator.SetBool(jumping_param, playerdata.jump);
+        animator.SetBool(risiing_param, playerdata.rising);
+        animator.SetBool(falling_param, playerdata.falling);
     }
 }

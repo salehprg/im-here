@@ -2,10 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class Movement : MonoBehaviour
 {
+
+    public UnityEvent jumpingEvent;
+    public UnityEvent groundEvent;
+    public UnityEvent risingEvent;
+    public UnityEvent fallingEvent;
 
     [SerializeField]
     public PlayerData playerData;
@@ -69,6 +75,8 @@ public class Movement : MonoBehaviour
             rigidbody.velocity = new Vector2(rigidbody.velocity.x, playerData.jumpHeight);
             playerData.jump = true;
             jump = false;
+
+            jumpingEvent.Invoke();
         }
 
         if(jumpcut)
@@ -96,11 +104,15 @@ public class Movement : MonoBehaviour
             {
                 playerData.rising = false;
                 playerData.falling = true;
+
+                fallingEvent.Invoke();
             }
             else if(rigidbody.velocity.y > 0)
             {
                 playerData.rising = true;
                 playerData.falling = false;
+
+                risingEvent.Invoke();
             }
         }
         else
@@ -118,6 +130,8 @@ public class Movement : MonoBehaviour
             {
                 playerData.jump = false;
                 jumpcount = 0;
+
+                groundEvent.Invoke();
             }
         }
     }
