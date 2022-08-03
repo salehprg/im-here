@@ -9,6 +9,7 @@ public class Follow : MonoBehaviour
     public float offset_X;
     public float speed;
     public float distance;
+    public PlayerData playerData;
 
     Vector2 destination;
     bool reach_goal;
@@ -37,16 +38,20 @@ public class Follow : MonoBehaviour
                 sprite.transform.localPosition = new Vector3(-2.5f , sprite.transform.localPosition.y , sprite.transform.localPosition.z);
             }
 
-            destination = new Vector2(following.position.x + offset_X , transform.position.y);
+            playerData.speed = 1;
+            destination = new Vector2(following.position.x + offset_X , following.position.y);
 
             reach_goal = false;
         }
         else
         {
             if(Vector2.Distance(transform.position , destination) < 0.1f)
+            {
+                playerData.speed = 0;
                 reach_goal = true;
+            }
         }
 
-        transform.position = Vector3.Lerp(transform.position , destination , Time.deltaTime * speed);
+        transform.position = Vector2.Lerp(transform.position , destination , Time.deltaTime * speed);
     }
 }

@@ -5,19 +5,22 @@ using UnityEngine;
 using UnityEngine.Events;
 
 [RequireComponent(typeof(Rigidbody2D))]
+
 public class Movement : MonoBehaviour
 {
 
+    public UnityEvent stopMovementEvent;
+    public UnityEvent movementEvent;
     public UnityEvent jumpingEvent;
     public UnityEvent groundEvent;
     public UnityEvent risingEvent;
     public UnityEvent fallingEvent;
 
-    [SerializeField]
     public PlayerData playerData;
     public GameObject sprite;
     public Vector2 offset;
     public float groundcheck_height = 0;
+    public bool CanClimb;
 
     Vector2 moveinput;
 
@@ -26,9 +29,11 @@ public class Movement : MonoBehaviour
     bool touchground;
 
     Rigidbody2D rigidbody;
+    Collider2D collider;
 
     private void Awake() {
         rigidbody = GetComponent<Rigidbody2D>();
+        collider = GetComponent<Collider2D>();
     }
     // Start is called before the first frame update
     void Start()
@@ -44,16 +49,20 @@ public class Movement : MonoBehaviour
 
         if(Mathf.Abs(moveinput.x) > 0.01)
         {
+            collider.isTrigger = false;
+
             sprite.transform.localScale = new Vector3(Mathf.Sign(moveinput.x) > 0 ? Mathf.Abs(sprite.transform.localScale.x) : -1 * Mathf.Abs(sprite.transform.localScale.x) , sprite.transform.localScale.y , sprite.transform.localScale.z);
             sprite.transform.localPosition = new Vector3(moveinput.x < 0 ? -2.5f : 0 , sprite.transform.localPosition.y , sprite.transform.localPosition.z);
         }
 
         if(jumpcount < 2 && Input.GetKeyDown(KeyCode.Space))
         {
-            jumpcount++;
+            collider.isTrigger = true;
 
+            jumpcount++;
             jump = true;
         }
+
         if(Input.GetKeyUp(KeyCode.Space))
         {
             jumpcut = true;
@@ -61,6 +70,15 @@ public class Movement : MonoBehaviour
 
     }
 
+    public void doJump(float amount)
+    {
+        rigidbody.velocity = new Vector2(rigidbody.velocity.x, amount);
+        playerData.jump = true;
+        jump = false;
+
+        jumpingEvent.Invoke();
+    }
+    
     private void FixedUpdate() 
     {
         float speedX = playerData.maxspeed * moveinput.x;
@@ -72,11 +90,7 @@ public class Movement : MonoBehaviour
 
         if(jump)
         {
-            rigidbody.velocity = new Vector2(rigidbody.velocity.x, playerData.jumpHeight);
-            playerData.jump = true;
-            jump = false;
-
-            jumpingEvent.Invoke();
+            doJump(playerData.jumpHeight);
         }
 
         if(jumpcut)
@@ -85,21 +99,24 @@ public class Movement : MonoBehaviour
             jumpcut = false;
         }
 
-        CheckOnGround();
+        if(rigidbody.velocity.y < 0)
+        {
+            collider.isTrigger = false;
+        }
+
+        CheckForGround();
+
+       
     
     }
 
-    void CheckOnGround()
+    void CheckForGround()
     {
-        Vector2 startpos = new Vector2(transform.position.x , transform.position.y);
+        Vector2 startpos = new Vector2(transform.position.x , transform.position.y) + offset;
         RaycastHit2D hitinfo = Physics2D.Linecast(startpos + offset , startpos + (Vector2.down * groundcheck_height));
-        
-        Debug.DrawLine(startpos + offset , startpos + (Vector2.down * groundcheck_height));
-        
 
         if(hitinfo.collider == null)
         {
-            Debug.Log(rigidbody.velocity.y);
             if(rigidbody.velocity.y < 0)
             {
                 playerData.rising = false;
@@ -116,10 +133,13 @@ public class Movement : MonoBehaviour
             }
         }
         else
+        {
             playerData.rising = playerData.falling = false;
+        }
     }
 
-    private void OnCollisionEnter2D(Collision2D other) {
+    void OnGroundCheck(Collision2D other)
+    {
         ContactPoint2D contactPoint = other.contacts.Where(x => x.otherCollider.gameObject == this.gameObject).FirstOrDefault();
 
         if(contactPoint.collider != null)
@@ -136,7 +156,16 @@ public class Movement : MonoBehaviour
         }
     }
 
+    private void OnCollisionEnter2D(Collision2D other) {
+        OnGroundCheck(other);
+    }
+
     private void OnCollisionStay2D(Collision2D other) {
+        OnGroundCheck(other);
+
+        if(!CanClimb)
+            return;
+
         ContactPoint2D contactPoint = other.contacts.Where(x => x.otherCollider.gameObject == this.gameObject).FirstOrDefault();
 
         if(contactPoint.collider != null)

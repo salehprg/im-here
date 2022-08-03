@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(PlayerData))]
 public class PlayerAnimation : MonoBehaviour
 {
     public Animator animator;
@@ -11,7 +12,7 @@ public class PlayerAnimation : MonoBehaviour
     public string risiing_param;
     public string falling_param;
 
-    PlayerData playerdata;
+    public PlayerData playerdata;
 
     void Start()
     {

@@ -1,8 +1,7 @@
 using System.Linq;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NovementData", menuName = "PlayerMovement/MovementData", order = 1)]
-public class PlayerData : ScriptableObject
+public class PlayerData : MonoBehaviour
 {
     [Header("Movement")]
     public float maxspeed;
